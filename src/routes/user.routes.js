@@ -1,6 +1,6 @@
 import express from 'express';
 import UserController from '../controllers/user.controller.js';
-import authMiddleware from '../middleware/auth.middleware.js';
+import authMiddleware from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -8,9 +8,13 @@ const router = express.Router();
 router.post('/register', UserController.registerUser);
 router.post('/login', UserController.loginUser);
 
-// Ejemplo de ruta protegida
-router.get('/protected-route', authMiddleware(['admin_principal']), (req, res) => {
-  res.status(200).json({ message: 'Esta es una ruta protegida' });
-});
+// Ruta para actualizar el perfil propio
+router.put('/profile', authMiddleware(), UserController.updateOwnProfile);
+
+// Rutas protegidas:
+router.get('/', authMiddleware(['admin_principal']), UserController.getAllUsers);
+router.get('/:id', authMiddleware(['admin_principal']), UserController.getUserById);
+router.put('/:id', authMiddleware(['admin_principal']), UserController.updateUser);
+router.delete('/:id', authMiddleware(['admin_principal']), UserController.deleteUser);
 
 export default router;
