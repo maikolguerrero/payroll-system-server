@@ -1,11 +1,22 @@
 import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { deleteFile } from '../config/upload.js';
 
 class UserController {
   // Registro de usuario
   async registerUser(req, res) {
     const { name, username, password, role = 'admin_nomina' } = req.body;
+
+    const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+    if (!username.match(usernameRegex) || username.includes(' ')) {
+      return res.status(400).json({ error: 'El nombre de usuario no es válido. Solo puede contener letras, números, guiones bajos, puntos y guiones, y no puede contener espacios.' });
+    }
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])[A-Za-z\d!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]{8,128}$/;
+    if (!password.match(passwordRegex)) {
+      return res.status(400).json({ error: 'La contraseña debe tener entre 8 y 128 caracteres, e incluir al menos una letra mayúscula, una letra minúscula, un número y un carácter especial, y no puede contener espacios.' });
+    }
 
     try {
       const hashedPassword = await bcrypt.hash(password, 12);
@@ -49,6 +60,40 @@ class UserController {
     }
   }
 
+  // Obtener todos los usuarios con paginación
+  async getUsersWithPagination(req, res) {
+    const { page = 1, limit = 10 } = req.query;
+
+    try {
+      // Convertir los parámetros a números
+      const pageNumber = parseInt(page, 10);
+      const pageSize = parseInt(limit, 10);
+
+      // Validar parámetros de paginación
+      if (pageNumber <= 0 || pageSize <= 0) {
+        return res.status(400).json({ error: 'Número de página y tamaño de página deben ser mayores a cero.' });
+      }
+
+      // Obtener usuarios con paginación
+      const users = await User.find()
+        .skip((pageNumber - 1) * pageSize) // Saltar los documentos anteriores
+        .limit(pageSize); // Limitar el número de documentos
+
+      // Contar el total de usuarios para la paginación
+      const totalUsers = await User.countDocuments();
+
+      res.status(200).json({
+        totalUsers,
+        page: pageNumber,
+        limit: pageSize,
+        totalPages: Math.ceil(totalUsers / pageSize),
+        users
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Error al obtener los usuarios: ' + error.message });
+    }
+  }
+
   // Obtener usuario por ID
   async getUserById(req, res) {
     try {
@@ -57,6 +102,31 @@ class UserController {
       res.status(200).json(user);
     } catch (error) {
       res.status(500).json({ error: 'Error al obtener el usuario: ' + error.message });
+    }
+  }
+
+  // Buscar usuarios por username o name
+  async searchUsers(req, res) {
+    const { query } = req.query; // Obtener el parámetro de consulta
+
+    console.log(query);
+
+    // Verificar si query es una cadena
+    if (typeof query !== 'string') {
+      return res.status(400).json({ error: 'El parámetro de búsqueda debe ser una cadena.' });
+    }
+
+    try {
+      const users = await User.find({
+        $or: [
+          { username: { $regex: query, $options: 'i' } }, // Búsqueda insensible a mayúsculas/minúsculas
+          { name: { $regex: query, $options: 'i' } }
+        ]
+      });
+
+      res.status(200).json(users);
+    } catch (error) {
+      res.status(500).json({ error: 'Error al buscar usuarios: ' + error.message });
     }
   }
 
@@ -73,8 +143,16 @@ class UserController {
       if (password) user.password = await bcrypt.hash(password, 12);
       if (role) user.role = role;
 
+      // Manejar la actualización de la foto de perfil
+      if (req.file) {
+        if (user.profile_image) {
+          deleteFile(user.profile_image);
+        }
+        user.profile_image = req.file.filename;
+      }
+
       await user.save();
-      res.status(200).json({ message: 'Usuario actualizado exitosamente' });
+      res.status(200).json({ message: 'Usuario actualizado exitosamente', user });
     } catch (error) {
       res.status(500).json({ error: 'Error al actualizar el usuario: ' + error.message });
     }
@@ -85,6 +163,12 @@ class UserController {
     try {
       const user = await User.findByIdAndDelete(req.params.id);
       if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+      // Eliminar foto de perfil asociado si existe
+      if (user.profile_image) {
+        deleteFile(user.profile_image);
+      }
+
       res.status(200).json({ message: 'Usuario eliminado exitosamente' });
     } catch (error) {
       res.status(500).json({ error: 'Error al eliminar el usuario: ' + error.message });
@@ -103,10 +187,28 @@ class UserController {
       if (username) user.username = username;
       if (password) user.password = await bcrypt.hash(password, 12);
 
+      // Manejar la actualización del logo (foto de perfil)
+      if (req.file) {
+        if (user.profile_image) {
+          deleteFile(user.profile_image);
+        }
+        user.profile_image = req.file.filename;
+      }
+
       await user.save();
-      res.status(200).json({ message: 'Perfil actualizado exitosamente' });
+      res.status(200).json({ message: 'Perfil actualizado exitosamente', user });
     } catch (error) {
       res.status(500).json({ error: 'Error al actualizar el perfil: ' + error.message });
+    }
+  }
+
+  // Obtener el conteo de usuarios con rol admin_principal
+  async countAdminPrincipals(req, res) {
+    try {
+      const count = await User.countDocuments({ role: 'admin_principal' });
+      res.status(200).json({ count });
+    } catch (error) {
+      res.status(500).json({ error: 'Error al contar los usuarios admin_principal: ' + error.message });
     }
   }
 }
