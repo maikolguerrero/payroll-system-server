@@ -19,6 +19,12 @@ class UserController {
     }
 
     try {
+      // Verificar si el nombre de usuario ya existe
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({ error: 'El nombre de usuario ya está en uso. Por favor, elige otro nombre.' });
+      }
+
       const hashedPassword = await bcrypt.hash(password, 12);
       const newUser = new User({ name, username, password: hashedPassword, role });
 
@@ -52,8 +58,9 @@ class UserController {
 
   // Obtener todos los usuarios
   async getAllUsers(req, res) {
+    const { sortBy = 'username', order = 'asc' } = req.query;
     try {
-      const users = await User.find();
+      const users = await User.find().sort({ [sortBy]: order === 'asc' ? 1 : -1 });;
       res.status(200).json(users);
     } catch (error) {
       res.status(500).json({ error: 'Error al obtener los usuarios: ' + error.message });
@@ -62,7 +69,7 @@ class UserController {
 
   // Obtener todos los usuarios con paginación
   async getUsersWithPagination(req, res) {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, sortBy = 'name', order = 'asc' } = req.query; // Añadir parámetros de ordenación
 
     try {
       // Convertir los parámetros a números
@@ -77,7 +84,8 @@ class UserController {
       // Obtener usuarios con paginación
       const users = await User.find()
         .skip((pageNumber - 1) * pageSize) // Saltar los documentos anteriores
-        .limit(pageSize); // Limitar el número de documentos
+        .limit(pageSize) // Limitar el número de documentos
+        .sort({ [sortBy]: order === 'asc' ? 1 : -1 }); // Ordenar los documentos
 
       // Contar el total de usuarios para la paginación
       const totalUsers = await User.countDocuments();
@@ -107,14 +115,7 @@ class UserController {
 
   // Buscar usuarios por username o name
   async searchUsers(req, res) {
-    const { query } = req.query; // Obtener el parámetro de consulta
-
-    console.log(query);
-
-    // Verificar si query es una cadena
-    if (typeof query !== 'string') {
-      return res.status(400).json({ error: 'El parámetro de búsqueda debe ser una cadena.' });
-    }
+    const {  query, sortBy = 'name', order = 'asc' } = req.query; // Añadir parámetros de ordenación
 
     try {
       const users = await User.find({
@@ -122,7 +123,7 @@ class UserController {
           { username: { $regex: query, $options: 'i' } }, // Búsqueda insensible a mayúsculas/minúsculas
           { name: { $regex: query, $options: 'i' } }
         ]
-      });
+      }).sort({ [sortBy]: order === 'asc' ? 1 : -1 }); // Ordenar los documentos
 
       res.status(200).json(users);
     } catch (error) {
@@ -133,10 +134,17 @@ class UserController {
   // Actualizar usuario
   async updateUser(req, res) {
     const { name, username, password, role } = req.body;
+    const userId = req.params.id;
 
     try {
-      const user = await User.findById(req.params.id);
+      const user = await User.findById(userId);
       if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+      // Verificar si el nombre de usuario ya existe
+      const existingUser = await User.findOne({ username, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({ error: 'El nombre de usuario ya está en uso. Por favor, elige otro nombre.' });
+      }
 
       if (name) user.name = name;
       if (username) user.username = username;
@@ -178,10 +186,17 @@ class UserController {
   // Actualizar perfil propio
   async updateOwnProfile(req, res) {
     const { name, username, password } = req.body;
+    const userId = req.user.id;
 
     try {
-      const user = await User.findById(req.user.id);
+      const user = await User.findById(userId);
       if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+      // Verificar si el nombre de usuario ya existe
+      const existingUser = await User.findOne({ username, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({ error: 'El nombre de usuario ya está en uso. Por favor, elige otro nombre.' });
+      }
 
       if (name) user.name = name;
       if (username) user.username = username;
