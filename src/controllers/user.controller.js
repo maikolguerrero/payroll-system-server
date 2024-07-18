@@ -1,6 +1,7 @@
 import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { deleteFile } from '../config/upload.js';
 
 class UserController {
   // Registro de usuario
@@ -73,8 +74,16 @@ class UserController {
       if (password) user.password = await bcrypt.hash(password, 12);
       if (role) user.role = role;
 
+      // Manejar la actualización de la foto de perfil
+      if (req.file) {
+        if(user.profile_image){
+          deleteFile(user.profile_image);
+        }
+          user.profile_image = req.file.filename;
+      }
+
       await user.save();
-      res.status(200).json({ message: 'Usuario actualizado exitosamente' });
+      res.status(200).json({ message: 'Usuario actualizado exitosamente', user });
     } catch (error) {
       res.status(500).json({ error: 'Error al actualizar el usuario: ' + error.message });
     }
@@ -85,6 +94,12 @@ class UserController {
     try {
       const user = await User.findByIdAndDelete(req.params.id);
       if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+      // Eliminar foto de perfil asociado si existe
+      if(user.profile_image){
+        deleteFile(user.profile_image);
+      }
+
       res.status(200).json({ message: 'Usuario eliminado exitosamente' });
     } catch (error) {
       res.status(500).json({ error: 'Error al eliminar el usuario: ' + error.message });
@@ -103,8 +118,16 @@ class UserController {
       if (username) user.username = username;
       if (password) user.password = await bcrypt.hash(password, 12);
 
+      // Manejar la actualización del logo (foto de perfil)
+      if (req.file) {
+        if(user.profile_image){
+          deleteFile(user.profile_image);
+        }
+          user.profile_image = req.file.filename;
+      }
+
       await user.save();
-      res.status(200).json({ message: 'Perfil actualizado exitosamente' });
+      res.status(200).json({ message: 'Perfil actualizado exitosamente', user });
     } catch (error) {
       res.status(500).json({ error: 'Error al actualizar el perfil: ' + error.message });
     }
