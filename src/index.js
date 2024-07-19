@@ -10,7 +10,6 @@ import departmentRoutes from './routes/department.routes.js';
 import positionRoutes from './routes/position.routes.js';
 import deductionRoutes from './routes/deduction.routes.js';
 import perceptionRoutes from './routes/perception.routes.js';
-import bankRoutes from './routes/bank.routes.js';
 import { upload } from './config/upload.js';
 
 dotenv.config();
