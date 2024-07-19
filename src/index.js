@@ -10,6 +10,9 @@ import departmentRoutes from './routes/department.routes.js';
 import positionRoutes from './routes/position.routes.js';
 import deductionRoutes from './routes/deduction.routes.js';
 import perceptionRoutes from './routes/perception.routes.js';
+import bankRoutes from './routes/bank.routes.js';
+import bankAccountRoutes from './routes/bank.account.routes.js';
+import employeeRoutes from './routes/employee.routes.js';
 import { upload } from './config/upload.js';
 
 dotenv.config();
@@ -31,6 +34,9 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/positions', positionRoutes);
 app.use('/api/deductions', deductionRoutes);
 app.use('/api/perceptions', perceptionRoutes);
+app.use('/api/banks', bankRoutes);
+app.use('/api/banks_accounts', bankAccountRoutes);
+app.use('/api/employees', employeeRoutes);
 
 // Ruta para subir archivos
 app.post('/upload', upload.single('file'), (req, res) => {
