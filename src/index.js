@@ -6,6 +6,10 @@ import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import userRoutes from './routes/user.routes.js';
 import companyRoutes from './routes/company.routes.js';
+import departmentRoutes from './routes/department.routes.js';
+import positionRoutes from './routes/position.routes.js';
+import deductionRoutes from './routes/deduction.routes.js';
+import perceptionRoutes from './routes/perception.routes.js';
 import { upload } from './config/upload.js';
 
 dotenv.config();
@@ -21,9 +25,12 @@ app.use(cors());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 app.use('/api/users', userRoutes);
 app.use('/api/company', companyRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/positions', positionRoutes);
+app.use('/api/deductions', deductionRoutes);
+app.use('/api/perceptions', perceptionRoutes);
 
 // Ruta para subir archivos
 app.post('/upload', upload.single('file'), (req, res) => {
