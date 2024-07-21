@@ -51,7 +51,7 @@ const payrollSchema = new Schema({
   state: {
     type: String,
     enum: ['Generada', 'Pagada', 'Pendiente', 'Cancelada'],
-    default: 'Generada',
+    default: 'Pagada',
   },
 }, { timestamps: true });
 
