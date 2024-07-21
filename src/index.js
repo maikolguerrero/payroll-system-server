@@ -14,6 +14,7 @@ import bankRoutes from './routes/bank.routes.js';
 import bankAccountRoutes from './routes/bank.account.routes.js';
 import employeeRoutes from './routes/employee.routes.js';
 import attendanceRoutes from './routes/attendance.routes.js';
+import payrollRoutes from './routes/payroll.routes.js';
 import { upload } from './config/upload.js';
 
 dotenv.config();
@@ -39,6 +40,7 @@ app.use('/api/banks', bankRoutes);
 app.use('/api/banks_accounts', bankAccountRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/attendances', attendanceRoutes);
+app.use('/api/payrolls', payrollRoutes);
 
 // Ruta para subir archivos
 app.post('/upload', upload.single('file'), (req, res) => {

@@ -1,4 +1,4 @@
-import Department from '../models/departament.model.js';
+import Department from '../models/department.model.js';
 
 class DepartmentController {
   // Crear un nuevo departamento
