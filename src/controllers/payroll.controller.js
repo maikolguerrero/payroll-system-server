@@ -24,7 +24,6 @@ async function checkOverlappingPayrolls(employee_id, start_date, end_date, exclu
   }
 
   const overlappingPayrolls = await Payroll.find(query);
-  console.log('Nóminas superpuestas encontradas:', overlappingPayrolls.length);
   return overlappingPayrolls.length > 0;
 }
 
@@ -206,7 +205,6 @@ class PayrollController {
 
       // Verificación de superposición de nóminas
       const overlappingPayrolls = await checkOverlappingPayrolls(employee._id, start_date, end_date);
-      console.log(overlappingPayrolls);
       if (await checkOverlappingPayrolls(employee._id, start_date, end_date)) {
         return res.status(400).json({ error: `El empleado ${employee._id} ya tiene una nómina en el rango de fechas proporcionado.` });
       }
