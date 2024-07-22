@@ -54,10 +54,10 @@ app.post('/upload', upload.single('file'), (req, res) => {
 });
 
 // Middleware para servir archivos estáticos (Imágenes)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware para servir archivos estáticos (txt)
-app.use('/exports', express.static(path.join(__dirname, 'exports')));
+app.use('/api/exports', express.static(path.join(__dirname, 'exports')));
 
 // Middleware para manejar rutas no definidas
 app.use((req, res, next) => {
