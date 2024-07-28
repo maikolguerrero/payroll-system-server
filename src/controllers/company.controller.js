@@ -5,6 +5,11 @@ class CompanyController {
   // Crear una nueva empresa
   async createCompany(req, res) {
     const { name, address, country, currency, foundation_date } = req.body;
+
+    if (!name || !address || !country || !currency || !foundation_date) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios.' });
+    }
+
     const logo = req.file ? req.file.filename : null; // Obtener el nombre del archivo si se cargó uno
 
     try {

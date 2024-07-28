@@ -1,4 +1,3 @@
-// import Perception from '../models/perception.model.js';
 import Perception from '../models/perception.model.js';
 
 class PerceptionController {

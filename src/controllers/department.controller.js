@@ -5,6 +5,10 @@ class DepartmentController {
   async createDepartment(req, res) {
     const { name, description, location } = req.body;
 
+    if (!name || !description || !location) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
     try {
       // Verificar si el nombre del departamento ya existe
       const existingDepartment = await Department.findOne({ name });

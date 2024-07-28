@@ -50,9 +50,10 @@ async function generatePayrollForEmployees(employees, { period, start_date, end_
 
     let totalHoursWorked = 0;
     attendances.forEach(attendance => {
-      const entryTime = new Date(attendance.entry_time);
-      const exitTime = new Date(attendance.exit_time);
-      const hoursWorked = (exitTime - entryTime) / (1000 * 60 * 60); // Convertir milisegundos a horas
+      const date = format(new Date(attendance.date), 'yyyy-MM-dd');
+      const entryDate = new Date(`${date}T${attendance.entry_time}:00`);
+      const exitDate = new Date(`${date}T${attendance.exit_time}:00`);
+      const hoursWorked = (exitDate - entryDate) / (1000 * 60 * 60); // Convertir de milisegundos a horas
       totalHoursWorked += hoursWorked;
     });
 
@@ -148,7 +149,6 @@ class PayrollController {
     try {
       const employees = await Employee.find();
       const generateEmployees = [];
-
 
       const errors = [];
       for (const employee of employees) {
