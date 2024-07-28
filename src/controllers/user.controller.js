@@ -8,6 +8,10 @@ class UserController {
   async registerUser(req, res) {
     const { name, username, password, role = 'admin_nomina' } = req.body;
 
+    if (!name || !username || !password) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
     const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
     if (!username.match(usernameRegex) || username.includes(' ')) {
       return res.status(400).json({ error: 'El nombre de usuario no es válido. Solo puede contener letras, números, guiones bajos, puntos y guiones, y no puede contener espacios.' });
@@ -115,7 +119,7 @@ class UserController {
 
   // Buscar usuarios por username o name
   async searchUsers(req, res) {
-    const {  query, sortBy = 'name', order = 'asc' } = req.query; // Añadir parámetros de ordenación
+    const { query, sortBy = 'name', order = 'asc' } = req.query; // Añadir parámetros de ordenación
 
     try {
       const users = await User.find({

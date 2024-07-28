@@ -5,6 +5,10 @@ class PositionController {
   async createPosition(req, res) {
     const { name, description, base_salary, daily_hours, period, work_days } = req.body;
 
+    if (!name || !description || !base_salary || !daily_hours || !period || !work_days) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
     try {
       // Verificar si el nombre del puesto ya existe
       const existingPosition = await Position.findOne({ name });
