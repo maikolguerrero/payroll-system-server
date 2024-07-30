@@ -116,12 +116,12 @@ async function generatePayrollForEmployees(employees, { period, start_date, end_
       start_date,
       end_date,
       payment_date,
-      base_salary,
-      overtime_hours,
+      base_salary: parseFloat(base_salary.toFixed(2)),
+      overtime_hours: parseFloat(overtime_hours.toFixed(2)),
       deductions: deductions,
       perceptions: perceptions,
-      net_salary,
-      gross_salary: adjusted_gross_salary,
+      net_salary: parseFloat(net_salary.toFixed(2)),
+      gross_salary: parseFloat(adjusted_gross_salary.toFixed(2)),
       state: 'Generada'
     });
 
