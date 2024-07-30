@@ -36,3 +36,5 @@ npm install
 npm start
 ```
 - **2.**  El servidor estará escuchando en el puerto `3000`.
+
+**Nota:**  Debes tener instalado y dejar ejecutando MongoDB si lo vas a usar de manera local y no como servicio en la nube.
